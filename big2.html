@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+   <title>Fisher-Yates shuffle in JavaScript</title>
+<head>
+	<style>
+   #para1,#para2,#para3,#para4{
+	 font-size: 700%;
+   }
+   
+   #player {
+	width: 90%;
+	border-style: double;
+   }
+   
+   button {
+	  background-color: #4CAF50; /* Green */
+	  border: none;
+	  color: white;
+	  padding: 15px 32px;
+	  text-align: center;
+	  text-decoration: none;
+	  display: inline-block;
+	  font-size: 16px;
+	}
+   
+   </style>
+   <script>
+		let shuffleCnt =0;
+		
+		let noFlushCntP1 = 0;
+		let noFlushCntP2 = 0;
+		let noFlushCntP3 = 0;
+		let noFlushCntP4 = 0;
+		let noStraightCntP1 = 0;
+		let noStraightCntP2 = 0;
+		let noStraightCntP3 = 0;
+		let noStraightCntP4 = 0;
+		let noFullHouseOrFourOfKindCntP1 = 0;
+		let noFullHouseOrFourOfKindCntP2 = 0;
+		let noFullHouseOrFourOfKindCntP3 = 0;
+		let noFullHouseOrFourOfKindCntP4 = 0;
+		
+		let gotNothingP1 = 0;
+		let gotNothingP2 = 0;
+		let gotNothingP3 = 0;
+		let gotNothingP4 = 0;
+		
+		
+		let twoJQKnoADeeCnt = 0;
+	  
+	  function haveFullHouseOrFourOfKind(array){
+		let valueOfPair = 0;
+		let valueOfThreeOfKind = 0;
+		let valueOfFourOfKind = 0;
+		
+		
+		for (let i=0; i< array.length-1;i++ ){
+			if(array[i+1].cardNo == array[i].cardNo ){
+				if ( i == 11){
+					//last 2, must be pair
+					//valueOfPair = array[i].cardNo;
+					valueOfPair++;
+					break;
+				}else{
+					// pair or more
+					if(array[i+2].cardNo == array[i].cardNo ){
+						if (i == 10){
+							//last 3, must be three of a kind
+							//valueOfThreeOfKind = array[i].cardNo;
+							valueOfThreeOfKind++;
+							break;
+						}else{
+							//three of a kind or more
+							if (array[i+3].cardNo == array[i].cardNo ){
+								if (i == 9){
+									//four of a kind
+									//last 4, don't need to add i
+									//valueOfFourOfKind = array[i].cardNo;
+									valueOfFourOfKind++;
+									break;
+								}else{
+									//valueOfFourOfKind = array[i].cardNo;
+									valueOfFourOfKind++;
+									i=i+3;
+								}
+							}else{
+								//three of a kind only
+								//valueOfThreeOfKind = array[i].cardNo;
+								valueOfThreeOfKind++;
+								i=i+2;
+							}
+						}
+						
+					}else{
+						//pair only
+						//valueOfPair = array[i].cardNo;
+						valueOfPair++;
+						i = i+1;
+					}
+				}
+			}
+		}
+		
+		if ((valueOfThreeOfKind > 0 && valueOfPair>0) || (valueOfThreeOfKind > 1) || (valueOfFourOfKind > 0)){
+			return true;
+		}else{
+			return false;
+		}
+		
+		//return valueOfPair+","+valueOfThreeOfKind+","+valueOfFourOfKind;
+	  }
+   
+	
+	  function haveFlush(array){
+		let countSpade = 0;
+		let countHeart = 0;
+		let countClub = 0;
+		let countDiamond = 0;
+		
+		
+		for (let i=0; i< array.length;i++ ){
+			if (array[i].suit == "spades" ) countSpade++ ;
+			if (array[i].suit == "hearts" ) countHeart++ ;
+			if (array[i].suit == "clubs" ) countClub++ ;
+			if (array[i].suit == "diamonds" ) countDiamond++ ;
+		}
+		
+		if (countSpade >= 5 || countHeart >= 5 || countClub >= 5 || countDiamond >= 5){
+			return true;
+		}else{
+			return false;
+		}
+	  }
+	  
+	   function haveStraight(array){
+			let straight = false;
+			for (let i=0; i< array.length -1;i++ ){
+				for (let j=i+1; j< array.length;j++ ){	//2nd cont.
+					if(array[j].cardNo == array[i].cardNo ) break;
+					else if (array[j].cardNo == array[i].cardNo +1 ){
+						for (let k = j+1;k< array.length;k++){	//3rd cont.
+							if(array[j].cardNo == array[i].cardNo ) break;
+							else if (array[k].cardNo == array[j].cardNo +1 ){
+								for (let l = k+1;l< array.length;l++){	//4th cont
+									if(array[l].cardNo == array[k].cardNo ) break;
+									else if (array[l].cardNo == array[k].cardNo +1 ){
+										for (let m = l+1;m< array.length;m++){ //5th cont
+											if(array[m].cardNo == array[l].cardNo ) break;
+											else if ((array[m].cardNo == array[l].cardNo +1 )||(array[l].cardNo ==13 && array[m].cardNo == 1)){
+												return true;
+												//break;
+											}
+											
+										}
+									}
+								}
+									
+							}
+						}
+					
+					}
+				}
+			}
+			
+			//consider A2345, 23456
+			if (!straight){
+				array.sort((a, b) => a.cardNo - b.cardNo);
+					for (let i=0; i< array.length -1;i++ ){
+					for (let j=i+1; j< array.length;j++ ){	//2nd cont.
+						if(array[j].cardNo == array[i].cardNo ) break;
+						else if (array[j].cardNo == array[i].cardNo +1 ){
+							for (let k = j+1;k< array.length;k++){	//3rd cont.
+								if(array[j].cardNo == array[i].cardNo ) break;
+								else if (array[k].cardNo == array[j].cardNo +1 ){
+									for (let l = k+1;l< array.length;l++){	//4th cont
+										if(array[l].cardNo == array[k].cardNo ) break;
+										else if (array[l].cardNo == array[k].cardNo +1 ){
+											for (let m = l+1;m< array.length;m++){ //5th cont
+												if(array[m].cardNo == array[l].cardNo ) break;
+												else if (array[m].cardNo == array[l].cardNo +1 ){
+													return true;
+													//break;
+												}
+												
+											}
+										}
+									}
+										
+								}
+							}
+						
+						}
+					}
+				}
+			}
+			
+			return straight;
+	   }
+	
+		 
+	  function countJQK(array){
+		let num = 0
+		
+		for (let i=0; i< array.length;i++ ){
+			/*if(array[i].card== '🂫' || array[i].card== '🂭' || array[i].card== '🂮' || array[i].card== '🂻' || array[i].card== '🂽' || array[i].card== '🂾' || array[i].card== '🃋' || array[i].card== '🃍' || 
+			array[i].card == '🃎' || array[i].card== '🃛' || array[i].card== '🃝' || array[i].card== '🃞'  ){*/
+			if(array[i].cardNo == 11||array[i].cardNo == 12||array[i].cardNo == 13){
+				num++;
+			}
+		}
+				  
+	    return num;  
+	  }
+   
+	  function twoJQKnoADee(array){
+		let num = 0
+		for (let i=0; i< array.length;i++ ){
+			if(array[i].cardNo == 1||array[i].cardNo == 2){
+				num++;
+			}
+		}
+	  
+	  
+	  
+		if (num == 0 && countJQK(array) < 3){	
+			twoJQKnoADeeCnt++;
+			return true;
+		}else
+			return false
+	  
+	  }
+	  
+	  function printRed(entry){
+			if (entry.id% 2 == 0){
+				return '<span style="color:red">'+entry.card+'</span>'
+			}else{
+				return entry.card
+			}
+	  
+	  }
+	  
+	  function printPlayerCards(array, divId){
+		document.getElementById(divId).innerHTML = "";
+		array.forEach(function(entry) {
+			document.getElementById(divId).innerHTML +=  printRed(entry);
+			
+		});
+		
+		
+		//document.getElementById(divId).innerHTML +=  haveFullHouseOrFourOfKind(array);
+	  }
+	  
+	  function sortCardsByOrder(array){
+		array.sort((a, b) => a.id - b.id);
+	  }
+   
+   
+      function fisher_yates(){
+	  
+		document.getElementById("p1condition").innerHTML = "";
+		document.getElementById("p2condition").innerHTML = "";
+		document.getElementById("p3condition").innerHTML = "";
+		document.getElementById("p4condition").innerHTML = "";
+		
+	  
+         //let array = [1,2,3,4,5,6,7,8,9];
+		 /*let array = ['🂡','🂢','🂣','🂤','🂥','🂦','🂧','🂨','🂩','🂪','🂫','🂭','🂮',
+		 '🂱','🂲','🂳','🂴','🂵','🂶','🂷','🂸','🂹','🂺','🂻','🂽','🂾',
+		 '🃁','🃂','🃃','🃄','🃅','🃆','🃇','🃈','🃉','🃊','🃋','🃍','🃎',
+		 '🃑','🃒','🃓','🃔','🃕','🃖','🃗','🃘','🃙','🃚','🃛','🃝','🃞'];*/
+		 let pokers = 
+		 [{"id":0,"card":'🃃',"suit":"diamonds","cardNo":3},{"id":1,"card":'🃓',"suit":"clubs","cardNo":3},{"id":2,"card":'🂳',"suit":"hearts","cardNo":3},{"id":3,"card":'🂣',"suit":"spades","cardNo":3},
+		 {"id":4,"card":'🃄',"suit":"diamonds","cardNo":4},{"id":5,"card":'🃔',"suit":"clubs","cardNo":4},{"id":6,"card":'🂴',"suit":"hearts","cardNo":4},{"id":7,"card":'🂤',"suit":"spades","cardNo":4},
+		 {"id":8,"card":'🃅',"suit":"diamonds","cardNo":5},{"id":9,"card":'🃕',"suit":"clubs","cardNo":5},{"id":10,"card":'🂵',"suit":"hearts","cardNo":5},{"id":11,"card":'🂥',"suit":"spades","cardNo":5},
+		 {"id":12,"card":'🃆',"suit":"diamonds","cardNo":6},{"id":13,"card":'🃖',"suit":"clubs","cardNo":6},{"id":14,"card":'🂶',"suit":"hearts","cardNo":6},{"id":15,"card":'🂦',"suit":"spades","cardNo":6},
+		 {"id":16,"card":'🃇',"suit":"diamonds","cardNo":7},{"id":17,"card":'🃗',"suit":"clubs","cardNo":7},{"id":18,"card":'🂷',"suit":"hearts","cardNo":7},{"id":19,"card":'🂧',"suit":"spades","cardNo":7},
+		 {"id":20,"card":'🃈',"suit":"diamonds","cardNo":8},{"id":21,"card":'🃘',"suit":"clubs","cardNo":8},{"id":22,"card":'🂸',"suit":"hearts","cardNo":8},{"id":23,"card":'🂨',"suit":"spades","cardNo":8},
+		 {"id":24,"card":'🃉',"suit":"diamonds","cardNo":9},{"id":25,"card":'🃙',"suit":"clubs","cardNo":9},{"id":26,"card":'🂹',"suit":"hearts","cardNo":9},{"id":27,"card":'🂩',"suit":"spades","cardNo":9},
+		 {"id":28,"card":'🃊',"suit":"diamonds","cardNo":10},{"id":29,"card":'🃚',"suit":"clubs","cardNo":10},{"id":30,"card":'🂺',"suit":"hearts","cardNo":10},{"id":31,"card":'🂪',"suit":"spades","cardNo":10},
+		 {"id":32,"card":'🃋',"suit":"diamonds","cardNo":11},{"id":33,"card":'🃛',"suit":"clubs","cardNo":11},{"id":34,"card":'🂻',"suit":"hearts","cardNo":11},{"id":35,"card":'🂫',"suit":"spades","cardNo":11},
+		 {"id":36,"card":'🃍',"suit":"diamonds","cardNo":12},{"id":37,"card":'🃝',"suit":"clubs","cardNo":12},{"id":38,"card":'🂽',"suit":"hearts","cardNo":12},{"id":39,"card":'🂭',"suit":"spades","cardNo":12},
+		 {"id":40,"card":'🃎',"suit":"diamonds","cardNo":13},{"id":41,"card":'🃞',"suit":"clubs","cardNo":13},{"id":42,"card":'🂾',"suit":"hearts","cardNo":13},{"id":43,"card":'🂮',"suit":"spades","cardNo":13},
+		 {"id":44,"card":'🃁',"suit":"diamonds","cardNo":1},{"id":45,"card":'🃑',"suit":"clubs","cardNo":1},{"id":46,"card":'🂱',"suit":"hearts","cardNo":1},{"id":47,"card":'🂡',"suit":"spades","cardNo":1},
+		 {"id":48,"card":'🃂',"suit":"diamonds","cardNo":2},{"id":49,"card":'🃒',"suit":"clubs","cardNo":2},{"id":50,"card":'🂲',"suit":"hearts","cardNo":2},{"id":51,"card":'🂢',"suit":"spades","cardNo":2}];
+		 
+         let i = pokers.length;
+         while (--i > 0) {
+            let temp = Math.floor(Math.random() * (i + 1));
+            [pokers[temp], pokers[i]] = [pokers[i], pokers[temp]];
+         }
+		 
+		 /*let player1 = array.slice(0,13);
+		 let player2 = array.slice(13,26);
+		 let player3 = array.slice(26,39);
+		 let player4 = array.slice(39,52);*/
+		 
+		 
+		 let player1 = new Array();
+		 let player2 = new Array();
+		 let player3 = new Array();
+		 let player4 = new Array()
+		 
+		 for (let i=0; i<13;i++){
+			player1.push(pokers[4*i]);
+			player2.push(pokers[4*i+1]);
+			player3.push(pokers[4*i+2]);
+			player4.push(pokers[4*i+3]);
+		 }
+		 
+		 
+		 if (twoJQKnoADee(player1)||twoJQKnoADee(player2)||twoJQKnoADee(player3)||twoJQKnoADee(player4)){
+			fisher_yates();
+		 }else{
+		 
+			 sortCardsByOrder(player1);
+			 sortCardsByOrder(player2);
+			 sortCardsByOrder(player3);
+			 sortCardsByOrder(player4);
+			 
+			 
+			 printPlayerCards(player1, "para1");	 
+			 printPlayerCards(player2, "para2");	 
+			 printPlayerCards(player3, "para3");	 
+			 printPlayerCards(player4, "para4");
+
+			if (!haveFlush(player1)) {noFlushCntP1++; document.getElementById("p1condition").innerHTML +=  " 冇花";}
+			if (!haveFlush(player2)) {noFlushCntP2++; document.getElementById("p2condition").innerHTML +=  " 冇花";}
+			if (!haveFlush(player3)) {noFlushCntP3++; document.getElementById("p3condition").innerHTML +=  " 冇花";}
+			if (!haveFlush(player4)) {noFlushCntP4++; document.getElementById("p4condition").innerHTML +=  " 冇花";}
+			
+			if (!haveStraight(player1)) {noStraightCntP1++; document.getElementById("p1condition").innerHTML +=  " 冇蛇";}
+			if (!haveStraight(player2)) {noStraightCntP2++; document.getElementById("p2condition").innerHTML +=  " 冇蛇";}
+			if (!haveStraight(player3)) {noStraightCntP3++; document.getElementById("p3condition").innerHTML +=  " 冇蛇";}
+			if (!haveStraight(player4)) {noStraightCntP4++; document.getElementById("p4condition").innerHTML +=  " 冇蛇";}
+			
+			if (!haveFullHouseOrFourOfKind(player1)) {noFullHouseOrFourOfKindCntP1++; document.getElementById("p1condition").innerHTML +=  " 冇夫/冇4條";}
+			if (!haveFullHouseOrFourOfKind(player2)) {noFullHouseOrFourOfKindCntP2++; document.getElementById("p2condition").innerHTML +=  " 冇夫/冇4條";}
+			if (!haveFullHouseOrFourOfKind(player3)) {noFullHouseOrFourOfKindCntP3++; document.getElementById("p3condition").innerHTML +=  " 冇夫/冇4條";}
+			if (!haveFullHouseOrFourOfKind(player4)) {noFullHouseOrFourOfKindCntP4++; document.getElementById("p4condition").innerHTML +=  " 冇夫/冇4條";}
+			
+			if ((!haveFlush(player1))&&(!haveStraight(player1))&&(!haveFullHouseOrFourOfKind(player1))) {gotNothingP1++; document.getElementById("p1condition").innerHTML +=  " 乜春都冇"; }
+			if ((!haveFlush(player2))&&(!haveStraight(player2))&&(!haveFullHouseOrFourOfKind(player2))) {gotNothingP2++; document.getElementById("p2condition").innerHTML +=  " 乜春都冇"; }
+			if ((!haveFlush(player3))&&(!haveStraight(player3))&&(!haveFullHouseOrFourOfKind(player3))) {gotNothingP3++; document.getElementById("p3condition").innerHTML +=  " 乜春都冇"; }
+			if ((!haveFlush(player4))&&(!haveStraight(player4))&&(!haveFullHouseOrFourOfKind(player4))) {gotNothingP4++; document.getElementById("p4condition").innerHTML +=  " 乜春都冇"; }
+		 
+		}
+		
+		shuffleCnt++;
+		document.getElementById("count").innerHTML = shuffleCnt - twoJQKnoADeeCnt;
+		
+		document.getElementById("P1noFlushCnt").innerHTML = noFlushCntP1;
+		document.getElementById("P2noFlushCnt").innerHTML = noFlushCntP2;
+		document.getElementById("P3noFlushCnt").innerHTML = noFlushCntP3;
+		document.getElementById("P4noFlushCnt").innerHTML = noFlushCntP4;
+		
+		document.getElementById("P1noStraight").innerHTML = noStraightCntP1;
+		document.getElementById("P2noStraight").innerHTML = noStraightCntP2;
+		document.getElementById("P3noStraight").innerHTML = noStraightCntP3;
+		document.getElementById("P4noStraight").innerHTML = noStraightCntP4;
+		
+		document.getElementById("P1noFullHouseOrFourOfKind").innerHTML = noFullHouseOrFourOfKindCntP1;
+		document.getElementById("P2noFullHouseOrFourOfKind").innerHTML = noFullHouseOrFourOfKindCntP2;
+		document.getElementById("P3noFullHouseOrFourOfKind").innerHTML = noFullHouseOrFourOfKindCntP3;
+		document.getElementById("P4noFullHouseOrFourOfKind").innerHTML = noFullHouseOrFourOfKindCntP4;
+		
+		document.getElementById("P1gotNothing").innerHTML = gotNothingP1;
+		document.getElementById("P2gotNothing").innerHTML = gotNothingP2;
+		document.getElementById("P3gotNothing").innerHTML = gotNothingP3;
+		document.getElementById("P4gotNothing").innerHTML = gotNothingP4;
+		
+      }
+	  
+	  function shuffle100times(){
+		for(let i=0;i<100;i++){
+			setTimeout(function() {
+			  //your code to be executed after 1 second
+			  fisher_yates();
+			}, 10);
+			
+		}
+	  }
+	  
+	  function shuffle1000times(){
+		for(let i=0;i<1000;i++){
+			setTimeout(function() {
+			  //your code to be executed after 1 second
+			  fisher_yates();
+			}, 1);
+			
+		}
+	  }
+	  
+	  
+	  
+	  
+   </script>
+   
+</head>
+<body>
+<button class="shuffle" onClick = "fisher_yates()">洗牌</button>
+<button class="shuffle" onClick = "shuffle100times()">洗牌100次</button>
+<button class="shuffle" onClick = "shuffle1000times()">洗牌1000次</button>
+<table style="width: 30%;" border="1">
+<tbody>
+<tr>
+<td></td>
+<td>&nbsp;&nbsp;Player 1</td>
+<td>&nbsp;&nbsp;Player 2</span></td>
+<td>&nbsp;&nbsp;Player 3</td>
+<td>&nbsp;&nbsp;Player 4</td>
+</tr>
+<tr>
+<td>冇蛇&nbsp;</td>
+<td id="P1noStraight">0</td>
+<td id="P2noStraight">0</td>
+<td id="P3noStraight">0</td>
+<td id="P4noStraight">0</td>
+</tr>
+<tr>
+<td>冇花&nbsp;</td>
+<td id="P1noFlushCnt">0</td>
+<td id="P2noFlushCnt">0</td>
+<td id="P3noFlushCnt">0</td>
+<td id="P4noFlushCnt">0</td>
+</tr>
+<tr>
+<td>冇夫/冇4條</td>
+<td id="P1noFullHouseOrFourOfKind">0</td>
+<td id="P2noFullHouseOrFourOfKind">0</td>
+<td id="P3noFullHouseOrFourOfKind">0</td>
+<td id="P4noFullHouseOrFourOfKind">0</td>
+</tr>
+<tr>
+<td>乜春都冇</td>
+<td id="P1gotNothing">0</td>
+<td id="P2gotNothing">0</td>
+<td id="P3gotNothing">0</td>
+<td id="P4gotNothing">0</td>
+</tr>
+<tr><td colspan="5">洗牌次數: <span id="count">0</span> </td></tr>
+</tbody>
+</table>
+   <div id="player">
+   <div style="font-weight: bold;">Player 1<span id="p1condition"></span></div>
+   <div id = "para1"></div>
+   </div>
+   <div id="player">
+   <div style="font-weight: bold;">Player 2<span id="p2condition"></span></div>
+   <div id = "para2"></div>
+   </div>
+   <div id="player">
+   <div style="font-weight: bold;">Player 3<span id="p3condition"></span></div>
+   <div id = "para3"></div>
+   </div>
+   <div id="player">
+   <div style="font-weight: bold;">Player 4<span id="p4condition"></span></div>
+   <div id = "para4"></div>
+   </div>
+   
+
+   
+</body>
+</html>
+
